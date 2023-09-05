@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Health Status</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      table {
+        border-collapse: collapse;
+        width: 50%;
+        margin: 20px auto;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        text-align: left;
+        padding: 8px;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>API Health Status</h1>
+    <table>
+      <tr>
+        <th>Endpoint</th>
+        <th>Status</th>
+      </tr>
+    </table>
+
+    <script>
+      const endpoints = [
+        "https://corsproxy.io/?https://admin.valid8me.com/admin/monitor/health",
+        "https://corsproxy.io/?https://login.valid8me.com/business/monitor/health",
+        "https://corsproxy.io/?https://customer.valid8me.com/customer/monitor/health",
+      ];
+
+      const labels = [
+        "Prod Admin API",
+        "Prod Business API",
+        "Prod Customer API",
+      ];
+
+      const table = document.querySelector("table");
+      endpoints.forEach((endpoint, index) => {
+        fetch(endpoint, { method: "GET" })
+          .then((response) => response.json())
+          .then((data) => {
+            const status = data.status === "UP" ? "Healthy" : "Error";
+            const row = table.insertRow(-1);
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.textContent = labels[index];
+            cell2.textContent = status;
+            cell2.style.color = data.status === "UP" ? "green" : "red";
+          })
+          .catch((error) => {
+            const row = table.insertRow(-1);
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.textContent = labels[index];
+            cell2.textContent = "Error";
+            cell2.style.color = "red";
+          });
+      });
+    </script>
+  </body>
+</html>
