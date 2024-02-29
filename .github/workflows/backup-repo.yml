@@ -1,0 +1,34 @@
+name: Backup Repo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * *' #Runs at 8 PM GMT daily
+    # - cron: "*/5 * * * *"
+
+env:
+ REPO_NAME: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: eu-west-1
+
+    - name: Mirror Repo and Zip
+      run : | 
+          repo_name=$(basename $PWD)
+          git clone --mirror https://${{secrets.PAT_GITHUB}}@github.com/valid8me-engineering/$repo_name.git
+          ls
+          zip -r $repo_name.zip $repo_name.git
+
+    - name: Upload to S3
+      run: |
+        repo_name=$(basename $PWD)
+        aws s3 cp $repo_name.zip s3://test-backup-repo/$repo_name/
